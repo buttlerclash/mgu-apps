@@ -12,7 +12,7 @@ const result = spawnSync('go', ['build', '-trimpath', '-buildvcs=false', '-ldfla
 if (result.error) throw result.error;
 if (result.status) process.exit(result.status);
 const names = ['mgu-fscpatch', 'LICENSE-Go.txt'];
-const component = { id: 'mgu-fscpatch', kind: 'tool', version: '1.0.0', title: 'FSC patch service',
+const component = { id: 'mgu-fscpatch', kind: 'tool', version: '1.1.0', title: 'FSC patch service',
     description: 'FSC verifier patch service.',
     mguHmi: ['ID7'], optional: true, uninstallable: true,
     requires: { 'mgu-deploy': '0.3.2' },

@@ -35,7 +35,8 @@ func legacyDualFixture(t *testing.T) []byte {
 
 func TestLegacyProfileRejectsTamperingAndMixedTags(t *testing.T) {
 	legacy := legacyDualFixture(t)
-	for _, offset := range []int{0, dualEntry + 1, dualNote + 16, dualFile + 55, dualFile + dualLocalModulus + 5, len(legacy) - 2} {
+	p := &dualProfiles[0]
+	for _, offset := range []int{0, p.entryOff + 1, dualNote + 16, p.file + 55, p.file + dualLocalModulus + 5, len(legacy) - 2} {
 		data := append([]byte(nil), legacy...)
 		data[offset] ^= 1
 		if _, ok := dualOriginal(data); ok {
@@ -48,7 +49,7 @@ func TestLegacyProfileRejectsTamperingAndMixedTags(t *testing.T) {
 		t.Fatal("old key with current tag accepted")
 	}
 	mixed = append([]byte(nil), legacy...)
-	copy(mixed[dualFile+dualLocalModulus:], patchedModulus)
+	copy(mixed[p.file+dualLocalModulus:], patchedModulus)
 	if _, ok := dualOriginal(mixed); ok {
 		t.Fatal("new key with old tag accepted")
 	}
@@ -56,12 +57,13 @@ func TestLegacyProfileRejectsTamperingAndMixedTags(t *testing.T) {
 
 func TestRotateLegacyKeyPreservesFactoryBackupAndRestores(t *testing.T) {
 	legacy := legacyDualFixture(t)
+	p := &dualProfiles[0]
 	stock, ok := dualOriginal(legacy)
 	if !ok {
 		t.Fatal("stock reconstruction failed")
 	}
 	raw := append([]byte(nil), stock...)
-	copy(raw[dualModulus:], legacy[dualFile+dualLocalModulus:dualFile+dualLocalModulus+256])
+	copy(raw[p.modulus:], legacy[p.file+dualLocalModulus:p.file+dualLocalModulus+256])
 	for name, installed := range map[string][]byte{"previous dual profile": legacy, "previous replacement-only profile": raw} {
 		t.Run(name, func(t *testing.T) {
 			loc := testLoc(t, installed, block352, true)
@@ -88,7 +90,7 @@ func TestRotateLegacyKeyPreservesFactoryBackupAndRestores(t *testing.T) {
 				t.Fatal("new key not installed", status)
 			}
 			current := readBin(t, loc.BinaryPath)
-			if !bytes.Equal(current[dualModulus:dualModulus+256], stock[dualModulus:dualModulus+256]) || !bytes.Equal(readBin(t, loc.BinaryPath+binaryBackupSuffix), stock) {
+			if !bytes.Equal(current[p.modulus:p.modulus+256], stock[p.modulus:p.modulus+256]) || !bytes.Equal(readBin(t, loc.BinaryPath+binaryBackupSuffix), stock) {
 				t.Fatal("factory key or backup changed")
 			}
 			if !bytes.Contains(readBin(t, loc.BlockPath), factory[:slotSize]) {

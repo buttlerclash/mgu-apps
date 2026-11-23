@@ -1,7 +1,7 @@
 {
   "id": "mgu-fscpatch",
   "kind": "tool",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "FSC patch service",
   "description": "FSC verifier patch service.",
   "mguHmi": [
@@ -16,7 +16,7 @@
     {
       "path": "mgu-fscpatch",
       "mode": "0755",
-      "sha256": "ac2c0260deb4353574dade1e69e64285458b70a19b2d104daf1005865d9adfeb"
+      "sha256": "86972b4bfaaaa4c3184bc99021354ca00ff7bd03135222a1ec9ecc440dc5dd0b"
     },
     {
       "path": "LICENSE-Go.txt",
@@ -49,5 +49,5 @@
   "recmgr": [
     "mgu-fscpatch"
   ],
-  "sourceSha256": "e286b6ae198c798de94248b3a9dc3d7eb8f63c980bb52e0fff9ceccbf3977b4d"
+  "sourceSha256": "2a7e2de9e7d65b80c4913ec24047aaca6a09df97a8de2fddbab1ba47d74eb8d6"
 }

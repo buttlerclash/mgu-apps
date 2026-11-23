@@ -18,7 +18,7 @@
         "ID7"
       ],
       "requires": {
-        "mgu-fscpatch": "1.0.0"
+        "mgu-fscpatch": "1.1.0"
       },
       "build": {
         "node": "tools/prebuilt.js",

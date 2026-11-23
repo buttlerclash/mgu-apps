@@ -66,9 +66,10 @@ func TestMergeRefusesFullOrMalformedBlockWithoutMutatingIt(t *testing.T) {
 	}
 }
 func TestStrictDualProfileAndTamperDetection(t *testing.T) {
-	stock := make([]byte, dualStockSize)
-	copy(stock[dualNote:], dualOriginalNote)
-	copy(stock[dualEntry:], dualPrologue)
+	p := &dualProfiles[0]
+	stock := make([]byte, p.stockSize)
+	copy(stock[dualNote:], p.originalNote)
+	copy(stock[p.entryOff:], p.prologue)
 	hash := fingerprint(stock)
 	patched, err := buildDualProfile(stock, hash)
 	if err != nil {
@@ -81,7 +82,7 @@ func TestStrictDualProfileAndTamperDetection(t *testing.T) {
 	if binary.LittleEndian.Uint32(patched[dualNote:]) != 1 || binary.LittleEndian.Uint32(patched[dualNote+4:]) != 5 {
 		t.Fatal("payload not mapped RX")
 	}
-	patched[dualFile+30] ^= 1
+	patched[p.file+30] ^= 1
 	if _, ok := dualOriginalProfile(patched, hash); ok {
 		t.Fatal("corrupt payload accepted")
 	}
@@ -212,20 +213,21 @@ func TestRestartRequiresPostRootLockAndHandlesNSMRefusal(t *testing.T) {
 	}
 }
 
-func TestKnownFirmwareCompatibilityRoundTrip(t *testing.T) {
+func TestRegisteredFirmwareCompatibilityRoundTrip(t *testing.T) {
 	fixture := os.Getenv("FSC_VERIFIER_FIXTURE")
 	if fixture == "" {
 		t.Skip("requires owner's firmware fixture")
 	}
 	stock := readBin(t, fixture)
-	if fingerprint(stock) != dualStockHash {
+	p := profileByStockHash(fingerprint(stock))
+	if p == nil {
 		t.Fatal("unexpected firmware fixture")
 	}
 	factory := certificateSlot(0x173, 1, "factory record retained byte-for-byte")
 	initial := emptyBlock()
 	copy(initial[3*slotSize:], factory)
 	legacy := append([]byte(nil), stock...)
-	copy(legacy[dualModulus:], patchedModulus)
+	copy(legacy[p.modulus:], patchedModulus)
 	loc := testLoc(t, legacy, block352, true)
 	loc.patchBinary = nil
 	loc.mergeBlock = nil
@@ -240,8 +242,19 @@ func TestKnownFirmwareCompatibilityRoundTrip(t *testing.T) {
 		t.Fatal("incorrect migration status", status)
 	}
 	patched := readBin(t, loc.BinaryPath)
-	if !bytes.Equal(patched[dualModulus:dualModulus+256], stock[dualModulus:dualModulus+256]) {
+	if !bytes.Equal(patched[p.modulus:p.modulus+256], stock[p.modulus:p.modulus+256]) {
 		t.Fatal("factory key changed")
+	}
+	if dualMatchedProfile(patched) != p || !dualCurrent(patched) {
+		t.Fatal("patched fixture not matched to its registered profile")
+	}
+	inspected, err := inspectBinary(loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if inspected.Offset != int64(p.modulus) || inspected.Trust != "oem-and-local" ||
+		inspected.SigningKeySHA256 != localModulusSHA256 || inspected.KeyUpdateRequired {
+		t.Fatal("per-profile inspection wrong", inspected)
 	}
 	if !bytes.Contains(readBin(t, loc.BlockPath), factory) || !bytes.Equal(readBin(t, loc.BlockPath+blockBackupSuffix), initial) {
 		t.Fatal("original FSC or backup lost")

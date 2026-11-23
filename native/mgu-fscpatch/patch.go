@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const toolVersion = "1.0.0"
+const toolVersion = "1.1.0"
 const blockAbsentSuffix = ".bup.absent"
 
 var absentBlockBackup = []byte("absent\n")

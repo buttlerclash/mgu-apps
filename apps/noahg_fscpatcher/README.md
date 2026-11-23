@@ -1,7 +1,7 @@
 # FSC Patch
 
 FSC Patch inspects, patches, or restores the FSC verifier on a supported BMW
-MGU head unit. Version `1.0.0` recognizes one inspected BAC4x verifier build;
+MGU head unit. Version `1.1.0` recognizes two inspected BAC4x verifier builds;
 unknown or modified builds are refused before a live change.
 
 > [!WARNING]
@@ -10,7 +10,7 @@ unknown or modified builds are refused before a live change.
 > head-unit functions unavailable. Review the source and keep a recoverable
 > backup before making changes.
 
-For the supported build, FSC Patch:
+For a supported build, FSC Patch:
 
 - keeps the factory verification key and factory FSC path intact;
 - adds a fallback verification path for the intentionally public local key;

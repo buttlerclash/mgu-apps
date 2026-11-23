@@ -88,8 +88,8 @@ func fingerprint(b []byte) string {
 // between stock and a variant build. When the stock prefix is gone but the
 // patched modulus prefix is present the binary is already patched.
 func scanBinary(data []byte) (offset int64, state string, modulusSHA string) {
-	if _, ok := dualOriginal(data); ok {
-		return dualModulus, statePatched, stockModulusSHA256
+	if p := dualMatchedProfile(data); p != nil {
+		return int64(p.modulus), statePatched, stockModulusSHA256
 	}
 	stock := bytes.Index(data, stockPattern)
 	patched := bytes.Index(data, patchedModulus[:60])
@@ -139,9 +139,9 @@ func inspectBinary(loc Locations) (BinaryStatus, error) {
 	st.Size = int64(len(data))
 	st.SHA256 = fingerprint(data)
 	st.Offset, st.State, st.ModulusSHA256 = scanBinary(data)
-	if _, ok := dualOriginal(data); ok {
+	if p := dualMatchedProfile(data); p != nil {
 		st.Trust = "oem-and-local"
-		st.SigningKeySHA256 = fingerprint(data[dualFile+dualLocalModulus : dualFile+dualLocalModulus+256])
+		st.SigningKeySHA256 = fingerprint(data[p.file+dualLocalModulus : p.file+dualLocalModulus+256])
 		st.KeyUpdateRequired = !dualCurrent(data)
 	} else if st.State == statePatched {
 		st.Trust = "replacement-only"

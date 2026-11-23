@@ -2,7 +2,7 @@
   "id": "noahg_fscpatcher",
   "title": "FSC Patch",
   "description": "Patch or restore the FSC verifier.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "vendor": "noahg",
   "loggingId": "NFSC",
   "iconGlyph": "security",
@@ -10,7 +10,7 @@
     "ID7"
   ],
   "requires": {
-    "mgu-fscpatch": "1.0.0"
+    "mgu-fscpatch": "1.1.0"
   },
   "screens": [
     {
